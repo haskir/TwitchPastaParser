@@ -1,5 +1,5 @@
+import datetime
 import os
-
 import dotenv
 from twitchio.ext import commands, routines
 from Functions import skip
@@ -25,6 +25,10 @@ class Bot(commands.Bot):
         new_channels = await self.streamers()
         current_channels = [channel.name for channel in self.connected_channels]
         print(f"{current_channels = }")
+        try:
+            print(f"{datetime.datetime.now()} - {os.stat('messages.txt')}")
+        except Exception as e:
+            print(e)
         channels_to_leave = [channel for channel in current_channels
                              if channel not in new_channels]
         await self.part_channels(channels_to_leave)
@@ -35,7 +39,6 @@ class Bot(commands.Bot):
 
     async def event_message(self, message):
         if not skip(message):
-            print(f"{message.channel.name} ->  {message.author.name}: {message.content}")
             try:
                 self.message_file.write(f"{message.content}\n")
             except UnicodeEncodeError:
@@ -49,9 +52,9 @@ class Bot(commands.Bot):
 
 if __name__ == "__main__":
     dotenv.load_dotenv()
-    ACCESS_TOKEN: str = os.getenv("ACCESS_TOKEN")
-    REFRESH_TOKEN: str = os.getenv("REFRESH_TOKEN")
-    CLIENT_ID: str = os.getenv("CLIENT_ID")
+    ACCESS_TOKEN: str = os.getenv("TwitchPastaParser_ACCESS_TOKEN")
+    REFRESH_TOKEN: str = os.getenv("TwitchPastaParser_REFRESH_TOKEN")
+    CLIENT_ID: str = os.getenv("TwitchPastaParser_CLIENT_ID")
     current: list = ["lapkinastol"]
     bot = Bot(ACCESS_TOKEN, current)
     bot.run()

@@ -1,6 +1,6 @@
 from collections import Counter
-import re
-
+import difflib, re
+from progress.bar import IncrementalBar
 from twitchio import Message
 
 
@@ -26,10 +26,26 @@ def is_pasta(string: str) -> int:
         return True
 
 
-if __name__ == "__main__":
-    test_string = """Баночка🥫с окурками🚬уже переполнена🤐 То,🟢что крутишься
-    с придурками🙃— только🙄твоя👈вина😓
-    Баночка🥫с окурками🚬баночка🥫с окурками🚬Уже🧨переполнена😲уже🧨переполнена😲
-    Поменялись🔄куртками🧥— Только🎇теперь🕐навсегда😳"""
+def similarity(s1, s2):
+    normalized1 = s1.lower()
+    normalized2 = s2.lower()
+    matcher = difflib.SequenceMatcher(None, normalized1, normalized2)
+    return matcher.ratio()
 
-    print(is_pasta(test_string))
+
+if __name__ == "__main__":
+    strings = open("messages.txt", "r", errors="ignore", encoding="utf-8").readlines()
+    bar = IncrementalBar('Countdown', max=len(strings))
+    dictionary = dict()
+    bar.start()
+    for key, string in enumerate(strings):
+        bar.next()
+        try:
+            dictionary[string] = \
+            max(similarity(string, t_string) for t_string in strings[key + 1:-10:])
+        except ValueError:
+            ...
+    with open("test.txt", "w", errors="ignore") as file:
+        for item in sorted(dictionary.items(), key=lambda x: x[1])[:10:]:
+            file.write(item[0])
+    bar.finish()
